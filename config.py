@@ -22,4 +22,4 @@ list_struct_test3 = [{"Test1": []}, {"Test2": []}, {"Test3": []}, {"Test4": []},
 main_name = "Solo Tree Testo Parser"
 main_description = "Скрипт выводит дерево зависимостей тестов для заданного теста"
 main_copyright = "(С) 2024 М0твей"
-main_version = "0.1"
+main_version = "1.0 beta"

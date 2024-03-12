@@ -1,7 +1,6 @@
 import os
+import re
  
-
-
 
 def del_repetitive_obj( obj_list:list):
   result_list = []
@@ -52,16 +51,22 @@ def lvl_qualifier_for_solo (test_name: str, list_struct: list):
   result_list = [] # Итоговый список, который содержит списки тестов. Каждый список это уровень в структуре
   intermediate_list = [] # промежуточный или вспомогательный список
   up_list = [] # лист на уровень выше 
+  flag_test_found = 0 # Проверка на то что тест вообще существует 
 
   for obj in list_struct:
     obj_keys = list(obj.keys())[0]
     if obj_keys == test_name:
+      flag_test_found = 1
       obj_value = list(obj.values())[0]
       intermediate_list = obj_value
       result_list.append([test_name])
       break
 
-  flag_append = 1 # Проверяем что был найден хоть один родительский тест
+  if flag_test_found == 0:
+    exit("Имя теста не найдено")
+
+  flag_parent = 0 # Проверяем что был найден хоть один родительский тест
+  flag_append = 1 # Проверяем что в ходе итерации цикла был найден родитель
 
   while flag_append == 1:
     flag_append = 0
@@ -69,6 +74,7 @@ def lvl_qualifier_for_solo (test_name: str, list_struct: list):
       for obj in list_struct:
         key_obj = list(obj.keys())[0]
         if  key_obj == test:
+          flag_parent = 1
           flag_append = 1
           list_value_obg = list(obj.values())
           up_list = up_list + list_value_obg[0]
@@ -76,6 +82,10 @@ def lvl_qualifier_for_solo (test_name: str, list_struct: list):
       result_list.append(intermediate_list)
       intermediate_list = up_list
       up_list = []
+    
+  if flag_parent == 0:
+    exit(f"{test_name} - Скрипт не смог найти ни одного родителя для этого теста")
+
   result_list.reverse()
   return(result_list)
 
@@ -185,7 +195,7 @@ def print_struct(dict_struct:dict, test_name: str):
 
 def testo_test_file (path_tests: str):
   testo_tests_path_list = []
-  list_tree = os.listdir(path_tests)
+  list_tree = os.listdir(path_tests)  
 
   for filename in list_tree:
     if os.path.isfile(f'{path_tests}/{filename}') and filename.endswith('.testo'):
@@ -196,10 +206,33 @@ def testo_test_file (path_tests: str):
   
   return(testo_tests_path_list)
 
-def testo_parser (path_tests: str):  
-  for filename in os.listdir(path_tests):
-    f = os.path.join(path_tests, filename)
-    if os.path.isdir(f):
-      print("dir", f)
-    if os.path.isfile(f) and filename.endswith('.testo'):
-        print(f)
+def testo_parser (test_path_list: str): 
+  list_struct_result = [] 
+ 
+  for path_file in test_path_list:
+    with open(path_file, 'r', encoding='utf-8') as file:
+      lines = file.readlines()
+      
+      for line in lines:        
+        line = re.sub(r'/\*.*\*/', "", line)
+        test_struct_line = re.findall(r'test (.*):(.*)', line)
+        if len(test_struct_line) != 0:
+          test_struct_line = list(test_struct_line[0])
+
+        if len(test_struct_line) != 2:
+          continue
+        
+        # очищаем первую и вторую строку
+        test_name = test_struct_line[0].strip()
+        parent_str = test_struct_line[1].replace("{", "")
+        parent_list = parent_str.split(",")
+        
+        # очищаем родителей
+        for enum, paren in enumerate(parent_list):
+          parent_list[enum] = paren.strip()
+
+        # Добавляем в результат
+        list_struct_result.append({test_name : parent_list})
+  
+  return(list_struct_result)
+          
