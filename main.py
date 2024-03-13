@@ -1,6 +1,8 @@
 
 import argparse
-from helpers import lvl_qualifier_for_solo, space_add, drow_line, del_last_space, testo_parser, testo_test_file
+from helpers import lvl_qualifier_for_solo, space_add, drow_line, del_last_space, testo_parser, testo_test_file \
+  , list_struct_with_bracket
+
 import config
 
 
@@ -18,38 +20,62 @@ def createParser():
 def main():
   parser = createParser()
   namespace = parser.parse_args() 
+  namespace.test_name = '[' + namespace.test_name + ']'
 
   if namespace.test:
     namespace.test_name = "Test11"
-    list_struct = config.list_struct_test3
+    
 
   test_path_list = testo_test_file(namespace.tests_path)
-  list_struct = testo_parser(test_path_list)
-  list_lvl = lvl_qualifier_for_solo(namespace.test_name, list_struct)
-  list_with_space = space_add(list_lvl, list_struct)
-  list_with_line = drow_line(list_lvl,list_with_space, list_struct )
-  list_with_line_NICE = del_last_space(list_with_line)
-
   if namespace.debug:
-    print("debug info \n===================================")
-    print("\nTEST PATH LIST")
-    print(test_path_list)
+    with open("./debug.log", 'w', encoding='utf-8') as file:
+      file.write("\nTEST PATH LIST\n")
+      for i in test_path_list:
+        file.write(i+"\n")
 
-    print("\nLIST_STRUCT")
-    print(list_struct)
 
-    print("\nLVL")
-    print(list_lvl)
+  if namespace.test:
+    list_struct = config.list_struct_test3
+  else:
+    list_struct = testo_parser(test_path_list)
+    list_struct = list_struct_with_bracket(list_struct)
+  if namespace.debug:
+    with open("./debug.log", 'a', encoding='utf-8') as file:
+      file.write("\nLIST_STRUCT\n")
+      for i in list_struct:
+        file.write(str(i)+"\n")
+  
+  
 
-    print("\nSPACE")
-    print(list_with_space)
+  list_lvl = lvl_qualifier_for_solo(namespace.test_name, list_struct)
+  if namespace.debug:
+    with open("./debug.log", 'a', encoding='utf-8') as file:
+      file.write("\nLVL\n")
+      for i in list_lvl:
+        file.write(str(i)+"\n")
 
-    print("\nLINE")
-    print(list_with_line)
 
-    print("\nLINE_NICE\n")
-    print(list_with_line_NICE)
-    print("\n===================================")
+  list_with_space = space_add(list_lvl, list_struct)
+  if namespace.debug:
+    with open("./debug.log", 'a', encoding='utf-8') as file:
+      file.write("\nSPACE\n")
+      for i in list_with_space:
+        file.write(str(i)+"\n")
+
+
+  list_with_line = drow_line(list_lvl, list_with_space, list_struct )
+  if namespace.debug:
+    with open("./debug.log", 'a', encoding='utf-8') as file:
+      file.write("\nLINE\n")
+      for i in list_with_line:
+        file.write(str(i)+"\n")
+
+  list_with_line_NICE = del_last_space(list_with_line)
+  if namespace.debug:
+      with open("./debug.log", 'a', encoding='utf-8') as file:
+        file.write("\nLINE_NICE\n")
+        for i in list_with_line_NICE:
+          file.write(str(i)+"\n")
 
 
   print("\nRESULT")

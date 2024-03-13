@@ -1,7 +1,8 @@
 import os
 import re
  
-
+# OLD
+# =====================================
 def del_repetitive_obj( obj_list:list):
   result_list = []
   for obj in obj_list:
@@ -46,6 +47,7 @@ def lvl_qualifier(list_struct: list):
     intermediate_list = []
 
   return(result_list)
+# =====================================
 
 def lvl_qualifier_for_solo (test_name: str, list_struct: list):
   result_list = [] # Итоговый список, который содержит списки тестов. Каждый список это уровень в структуре
@@ -97,9 +99,9 @@ def find_parent(test_name: str, list_struct: list):
       return(list_parent)
 
 def space_add (list_lvl: list, list_struct: list):  
-  list_lvl_bak = list_lvl
+  list_lvl_bak = list_lvl.copy()
   up_list_bak = list_lvl_bak[0]
-  up_list = list_lvl[0]
+  up_list = list_lvl[0].copy()
   list_res = []
 
   for num_lvl in range (1, len(list_lvl)):
@@ -128,20 +130,20 @@ def space_add (list_lvl: list, list_struct: list):
     up_list = list_obj
     up_list_bak = list_lvl_bak[num_lvl]
 
-  list_res.append(up_list)
+  list_res.append(up_list)  
   return(list_res)
 
 def drow_line (list_lvl: list, list_with_space: list, list_struct: list):
   result_list = []
   for num_lvl in range(0, len(list_lvl) - 1):
     line_str = "  "
-    up_lvl = list_lvl[num_lvl]
+    up_lvl = list_lvl[num_lvl]    
     down_list = list_lvl[num_lvl + 1]
     for test in down_list:
       parent_list = find_parent(test, list_struct)
       if parent_list:
         parent_index_list = []
-        for parent in parent_list:
+        for parent in parent_list:          
           parent_index_list.append(up_lvl.index(parent))
         
         if len(parent_index_list) == 1:
@@ -169,30 +171,6 @@ def del_last_space(list_with_line: list):
     list_obj[-1] = list_obj[-1].rstrip()
   return(result_list)
 
-def print_struct(dict_struct:dict, test_name: str): 
-
-  print("\nLVL")
-  list_lvl = lvl_qualifier_for_solo(test_name, dict_struct)
-  print(list_lvl)
-
-  print("\nSPACE")
-  list_with_space = space_add(list_lvl, dict_struct)
-  print(list_with_space)
-
-  print("\nLINE\n")
-  list_with_line = drow_line(list_lvl,list_with_space, dict_struct )
-  print(list_with_line)
-
-  print("\nLINE_NICE\n")
-  list_with_line_NICE = del_last_space(list_with_line)
-  print(list_with_line)
-
-  print("\nRESULT\n")
-  for line in list_with_line_NICE:
-    for obj in line:
-      print(obj, end=" ")
-    print()
-
 def testo_test_file (path_tests: str):
   testo_tests_path_list = []
   list_tree = os.listdir(path_tests)  
@@ -213,11 +191,24 @@ def testo_parser (test_path_list: str):
     with open(path_file, 'r', encoding='utf-8') as file:
       lines = file.readlines()
       
-      for line in lines:        
+      for line in lines:    
+        line = re.sub(r'#.*', "", line)    
         line = re.sub(r'/\*.*\*/', "", line)
         test_struct_line = re.findall(r'test (.*):(.*)', line)
+        if len(test_struct_line) == 0:
+          test_struct_line = re.findall(r'test (.*)', line)
+
         if len(test_struct_line) != 0:
-          test_struct_line = list(test_struct_line[0])
+          if isinstance(test_struct_line[0], tuple):
+            test_struct_line = list(test_struct_line[0])
+          elif not isinstance(test_struct_line[0], str):
+            exit("Неправильный тип данных")
+          
+        if len(test_struct_line) == 1:
+          test_name = test_struct_line[0]
+          test_name = test_name.replace("{", "").strip()
+
+          list_struct_result.append({test_name : []})
 
         if len(test_struct_line) != 2:
           continue
@@ -235,4 +226,17 @@ def testo_parser (test_path_list: str):
         list_struct_result.append({test_name : parent_list})
   
   return(list_struct_result)
-          
+
+def list_struct_with_bracket(list_struct: list):
+  for enum,struct in enumerate(list_struct):
+    struct_keys = list(struct.keys())[0]
+    struct_keys = "[" + struct_keys + "]"
+
+    list_value_struct = list(struct.values())[0]
+    for enum2, value_struct in enumerate(list_value_struct):
+      value_struct = "[" + value_struct + "]"
+      list_value_struct[enum2] = value_struct
+
+    list_struct[enum] = {struct_keys: list_value_struct}
+  
+  return(list_struct)
