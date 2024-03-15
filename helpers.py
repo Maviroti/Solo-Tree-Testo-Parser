@@ -240,3 +240,29 @@ def list_struct_with_bracket(list_struct: list):
     list_struct[enum] = {struct_keys: list_value_struct}
   
   return(list_struct)
+
+def name_and_path (test_path_list: str):
+  name_and_path_dict_result = {}
+ 
+  for path_file in test_path_list:
+    with open(path_file, 'r', encoding='utf-8') as file:
+      lines = file.readlines()
+      
+      for line in lines:    
+        line = re.sub(r'#.*', "", line)    
+        line = re.sub(r'/\*.*\*/', "", line)
+        test_name_list = re.findall(r"test (.*)", line)
+        if len(test_name_list) == 1:          
+          test_name = test_name_list[0]
+          test_name = re.sub(r":(.*)","", test_name)
+          test_name = test_name.replace("{", "")
+          test_name = test_name.strip()          
+          if test_name in name_and_path_dict_result:
+              name_and_path_dict_result[test_name].append(path_file)    
+          else:
+              name_and_path_dict_result[test_name] = [path_file]
+
+          
+  
+  return(name_and_path_dict_result)
+        

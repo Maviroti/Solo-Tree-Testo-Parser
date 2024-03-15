@@ -19,7 +19,7 @@ list_struct_test3 = [{"Test1": []}, {"Test2": []}, {"Test3": []}, {"Test4": []},
 # ======================================
 # Параметры для argparser
 # ======================================
-main_name = "Solo Tree Testo Parser"
-main_description = "Скрипт выводит дерево зависимостей тестов для заданного теста"
+main_name = "Solo_Tree_Testo_Parser"
+main_description = "Многофункциональный скрипт для работы с большим количеством тестов, написанных на Testo leng"
 main_copyright = "(С) 2024 М0твей"
-main_version = "1.0 beta"
+main_version = "2.0"
