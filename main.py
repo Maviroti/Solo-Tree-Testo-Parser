@@ -47,7 +47,7 @@ def main():
     if namespace.test:
       namespace.test_name = "Test11"
       
-
+    # Получаем список путей до всех файлов .testo внутри переданной папки
     test_path_list = testo_test_file(namespace.tests_path)
     if namespace.debug:
       with open("./debug.log", 'w', encoding='utf-8') as file:
@@ -66,7 +66,6 @@ def main():
         file.write("\nLIST_STRUCT\n")
         for i in list_struct:
           file.write(str(i)+"\n")
-    
     
 
     list_lvl = lvl_qualifier_for_solo(namespace.test_name, list_struct)
